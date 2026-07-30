@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  mimir-postgres:
+    image: postgres:15-alpine
+    container_name: mimir-postgres
+    environment:
+      POSTGRES_USER: mimir_user
+      POSTGRES_PASSWORD: mimir_password
+      POSTGRES_DB: mimir_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mimir_user -d mimir_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mimir-redis:
+    image: redis:7-alpine
+    container_name: mimir-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mimir-backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mimir-backend
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgres://mimir_user:mimir_password@mimir-postgres:5432/mimir_db
+      - REDIS_URL=redis://mimir-redis:6379
+      - JWT_SECRET=super_secret_mimir_jwt_key_2026
+    ports:
+      - "3000:3000"
+    depends_on:
+      mimir-postgres:
+        condition: service_healthy
+      mimir-redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:

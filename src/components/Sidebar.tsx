@@ -16,7 +16,10 @@ import {
   User,
   ChevronLeft,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  MonitorSmartphone,
+  Link2,
+  ShieldCheck
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -50,6 +53,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'files', label: 'Files', icon: FolderSync },
     { id: 'ai-memory', label: 'AI Memory', icon: Brain },
     { id: 'logs', label: 'Logs', icon: FileText },
+    { id: 'my-device', label: 'My Device', icon: MonitorSmartphone },
+    { id: 'connections', label: 'Connections', icon: Link2 },
+    { id: 'trusted-devices', label: 'Trusted Devices', icon: ShieldCheck },
     { id: 'settings', label: 'Settings', icon: Settings },
     { id: 'profile', label: 'Profile', icon: User }
   ];

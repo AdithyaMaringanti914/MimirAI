@@ -10,8 +10,16 @@ import {
   Clock,
   ArrowRight,
   Plus,
-  Play
+  Play,
+  Copy,
+  Eye,
+  EyeOff,
+  RefreshCw,
+  MonitorSmartphone,
+  FolderSync
 } from 'lucide-react';
+import { useHostIdentity } from '../context/HostIdentityContext';
+import { useConnectionManager } from '../hooks/useConnectionManager';
 
 interface DashboardViewProps {
   devices: Device[];
@@ -35,13 +43,32 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onNavigateTab
 }) => {
   const [connectInput, setConnectInput] = useState('');
+  const [connectPassword, setConnectPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [copiedId, setCopiedId] = useState(false);
+  const [copiedPw, setCopiedPw] = useState(false);
+
+  const { deviceId, password, hostStatus, deviceName, refreshPassword } = useHostIdentity();
+  const { manager, session } = useConnectionManager();
+
   const onlineDevicesCount = devices.filter(d => d.status === 'online').length;
 
   const handleConnect = (e: React.FormEvent) => {
     e.preventDefault();
     if (connectInput.trim()) {
-      onQuickConnect(connectInput.trim());
-      setConnectInput('');
+      manager.requestConnection(connectInput.trim(), connectPassword, deviceName);
+      // Let the ConnectionManager state handle the rest of the flow
+    }
+  };
+
+  const handleCopy = async (text: string, type: 'id' | 'pw') => {
+    await navigator.clipboard.writeText(text);
+    if (type === 'id') {
+      setCopiedId(true);
+      setTimeout(() => setCopiedId(false), 2000);
+    } else {
+      setCopiedPw(true);
+      setTimeout(() => setCopiedPw(false), 2000);
     }
   };
 
@@ -188,57 +215,146 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
-      {/* Second Section: Quick Connect & Recent Devices */}
+      {/* Second Section: Identity & Connect */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Quick Connect Box */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E5E7EB] shadow-google-sm space-y-4">
-          <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
-            <div className="flex items-center space-x-2">
-              <Zap className="w-4 h-4 text-[#1A73E8]" />
-              <h2 className="text-sm font-bold text-[#202124]">Quick Remote Connect</h2>
+        
+        {/* Left Column: Your Device + Connect */}
+        <div className="flex flex-col space-y-6">
+          
+          {/* YOUR DEVICE Card */}
+          <div className="bg-white p-5 rounded-2xl border border-[#E5E7EB] shadow-google-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
+              <div className="flex items-center space-x-2">
+                <MonitorSmartphone className="w-4 h-4 text-[#1A73E8]" />
+                <h2 className="text-sm font-bold text-[#202124]">Your Device</h2>
+              </div>
+              <div className="flex items-center space-x-1.5">
+                <span className={`w-2 h-2 rounded-full ${hostStatus === 'ready' ? 'bg-[#34A853]' : hostStatus === 'connecting' ? 'bg-[#1A73E8] animate-pulse' : 'bg-[#9AA0A6]'}`} />
+                <span className={`text-[11px] font-semibold capitalize ${hostStatus === 'ready' ? 'text-[#34A853]' : hostStatus === 'connecting' ? 'text-[#1A73E8]' : 'text-[#5F6368]'}`}>
+                  {hostStatus}
+                </span>
+              </div>
             </div>
-            <span className="text-[11px] text-[#5F6368] font-mono">RustDesk Core Protocol</span>
+
+            <div className="space-y-4 pt-1">
+              {/* ID Field */}
+              <div>
+                <label className="text-[11px] font-semibold text-[#5F6368] uppercase tracking-wider block mb-1">
+                  Device ID
+                </label>
+                <div className="flex items-center space-x-2">
+                  <div className="flex-1 font-mono text-xl font-bold tracking-[0.1em] text-[#202124] bg-[#F8F9FA] rounded-xl px-4 py-2 border border-[#E5E7EB] select-all">
+                    {deviceId || '--- --- ---'}
+                  </div>
+                  <button
+                    onClick={() => handleCopy(deviceId, 'id')}
+                    className="p-3 text-[#5F6368] hover:text-[#1A73E8] hover:bg-[#E8F0FE] rounded-xl border border-[#E5E7EB] transition-colors flex-shrink-0"
+                    title="Copy Device ID"
+                  >
+                    {copiedId ? <CheckCircle2 className="w-5 h-5 text-[#34A853]" /> : <Copy className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div>
+                <label className="text-[11px] font-semibold text-[#5F6368] uppercase tracking-wider block mb-1">
+                  Password
+                </label>
+                <div className="flex items-center space-x-2">
+                  <div className="flex-1 font-mono text-lg font-bold tracking-[0.2em] text-[#202124] bg-[#F8F9FA] rounded-xl px-4 py-2 border border-[#E5E7EB] select-all relative overflow-hidden">
+                    {showPassword ? password || '------' : '••••••'}
+                  </div>
+                  <div className="flex items-center space-x-1 flex-shrink-0">
+                    <button
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="p-3 text-[#5F6368] hover:text-[#202124] hover:bg-[#F3F4F6] rounded-xl border border-[#E5E7EB] transition-colors"
+                      title={showPassword ? "Hide Password" : "Show Password"}
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                    <button
+                      onClick={refreshPassword}
+                      className="p-3 text-[#5F6368] hover:text-[#202124] hover:bg-[#F3F4F6] rounded-xl border border-[#E5E7EB] transition-colors"
+                      title="Refresh Password"
+                    >
+                      <RefreshCw className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleCopy(password, 'pw')}
+                      className="p-3 text-[#5F6368] hover:text-[#1A73E8] hover:bg-[#E8F0FE] rounded-xl border border-[#E5E7EB] transition-colors"
+                      title="Copy Password"
+                    >
+                      {copiedPw ? <CheckCircle2 className="w-5 h-5 text-[#34A853]" /> : <Copy className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <form onSubmit={handleConnect} className="space-y-3">
-            <div>
-              <label className="text-[11px] font-semibold text-[#5F6368] uppercase tracking-wider block mb-1">
-                Target Device ID or IP Address
-              </label>
-              <input
-                type="text"
-                placeholder="e.g., 982-410-381 or 10.240.12.84"
-                value={connectInput}
-                onChange={(e) => setConnectInput(e.target.value)}
-                className="w-full bg-[#F8F9FA] text-xs text-[#202124] px-3 py-2.5 rounded-xl border border-[#E5E7EB] focus:outline-none focus:border-[#1A73E8] focus:bg-white font-mono"
-              />
+          {/* CONNECT TO REMOTE DEVICE Card */}
+          <div className="bg-white p-5 rounded-2xl border border-[#E5E7EB] shadow-google-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-[#E5E7EB] pb-3">
+              <div className="flex items-center space-x-2">
+                <Zap className="w-4 h-4 text-[#1A73E8]" />
+                <h2 className="text-sm font-bold text-[#202124]">Connect to Remote Device</h2>
+              </div>
             </div>
 
-            <div>
-              <label className="text-[11px] font-semibold text-[#5F6368] uppercase tracking-wider block mb-1">
-                Access Password / Token
-              </label>
-              <input
-                type="password"
-                placeholder="••••••••••••"
-                defaultValue="mimir-token-sec88"
-                className="w-full bg-[#F8F9FA] text-xs text-[#202124] px-3 py-2.5 rounded-xl border border-[#E5E7EB] focus:outline-none focus:border-[#1A73E8] focus:bg-white font-mono"
-              />
-            </div>
+            <form onSubmit={handleConnect} className="space-y-3 pt-1">
+              <div>
+                <label className="text-[11px] font-semibold text-[#5F6368] uppercase tracking-wider block mb-1">
+                  Remote ID
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g., 982-410-381"
+                  value={connectInput}
+                  onChange={(e) => setConnectInput(e.target.value)}
+                  className="w-full bg-[#F8F9FA] text-sm text-[#202124] px-3 py-2.5 rounded-xl border border-[#E5E7EB] focus:outline-none focus:border-[#1A73E8] focus:bg-white font-mono"
+                />
+              </div>
 
-            <button
-              type="submit"
-              className="w-full bg-[#1A73E8] hover:bg-[#1557B0] text-white font-semibold text-xs py-2.5 rounded-xl flex items-center justify-center space-x-2 transition-colors shadow-sm"
-            >
-              <Play className="w-4 h-4 fill-white" />
-              <span>Launch Remote Session</span>
-            </button>
-          </form>
+              <div>
+                <label className="text-[11px] font-semibold text-[#5F6368] uppercase tracking-wider block mb-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={connectPassword}
+                  onChange={(e) => setConnectPassword(e.target.value)}
+                  className="w-full bg-[#F8F9FA] text-sm text-[#202124] px-3 py-2.5 rounded-xl border border-[#E5E7EB] focus:outline-none focus:border-[#1A73E8] focus:bg-white font-mono"
+                />
+              </div>
 
-          <div className="pt-2 text-[11px] text-[#5F6368] flex items-center justify-between border-t border-[#E5E7EB]">
-            <span>Relay Server: <strong className="text-[#202124]">us-east-1.mimir.net</strong></span>
-            <span className="text-[#34A853] font-semibold">14ms Peer RTT</span>
+              <div className="flex items-center space-x-2 pt-2">
+                <button
+                  type="submit"
+                  disabled={!connectInput.trim() || (session && session.status !== 'idle' && session.status !== 'failed' && session.status !== 'disconnected')}
+                  className="flex-1 bg-[#1A73E8] hover:bg-[#1557B0] text-white font-semibold text-xs py-2.5 rounded-xl flex items-center justify-center space-x-2 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Play className="w-4 h-4 fill-white" />
+                  <span>
+                    {session?.status === 'waiting_approval' ? 'Waiting...' : 
+                     session?.status === 'negotiating' ? 'Connecting...' : 
+                     'Connect'}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {}}
+                  disabled={!connectInput.trim()}
+                  className="bg-[#F8F9FA] hover:bg-[#F3F4F6] text-[#5F6368] hover:text-[#1A73E8] border border-[#E5E7EB] font-semibold text-xs px-3 py-2.5 rounded-xl flex items-center justify-center space-x-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="File Transfer"
+                >
+                  <FolderSync className="w-4 h-4" />
+                </button>
+              </div>
+            </form>
           </div>
+
         </div>
 
         {/* Recent Devices */}

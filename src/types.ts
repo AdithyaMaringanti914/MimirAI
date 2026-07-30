@@ -11,7 +11,10 @@ export type NavigationTab =
   | 'ai-memory'
   | 'logs'
   | 'settings'
-  | 'profile';
+  | 'profile'
+  | 'my-device'
+  | 'connections'
+  | 'trusted-devices';
 
 export type DeviceStatus = 'online' | 'idle' | 'offline';
 export type OperatingSystem = 'windows' | 'macos' | 'linux' | 'ubuntu' | 'android';

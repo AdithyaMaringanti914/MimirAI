@@ -18,9 +18,9 @@ import React, {
   useState,
 } from 'react';
 import { Monitor, Loader2, WifiOff } from 'lucide-react';
-import { useRemoteInput } from '../../hooks/useRemoteInput';
-import type { ConnectionState } from '../../types/webrtc';
-import type { RemoteDataEvent } from '../../types/events';
+import { InputService } from '../../../services/InputService';
+import { connectionManager } from '../../../services/connection/ConnectionManager';
+import type { ConnectionState } from '../../../services/connection/types/session';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -33,8 +33,7 @@ export interface RemoteCanvasProps {
   connectionState: ConnectionState;
   /** Whether to capture and transmit mouse/keyboard input */
   inputEnabled?: boolean;
-  /** Called with each normalized input event */
-  onInputEvent?: (event: RemoteDataEvent) => void;
+  /** Removed onInputEvent in favor of direct InputService dispatching */
   /** Whether the canvas is in fullscreen mode */
   isFullscreen?: boolean;
 }
@@ -47,7 +46,6 @@ export const RemoteCanvas: React.FC<RemoteCanvasProps> = ({
   videoRef,
   connectionState,
   inputEnabled = true,
-  onInputEvent,
   isFullscreen = false,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -62,20 +60,18 @@ export const RemoteCanvas: React.FC<RemoteCanvasProps> = ({
     connectionState === 'Connecting' ||
     connectionState === 'Reconnecting';
 
-  // ---- Remote Input Hook ----------------------------------------------------
+  // ---- Remote Input Service -------------------------------------------------
 
-  const handleEvent = useCallback(
-    (event: RemoteDataEvent) => {
-      onInputEvent?.(event);
-    },
-    [onInputEvent]
-  );
+  useEffect(() => {
+    if (!containerRef.current || !inputEnabled || !isConnected) return;
 
-  const remoteInput = useRemoteInput({
-    onEvent: handleEvent,
-    enabled: inputEnabled && isConnected,
-    mouseMoveThrottleMs: 16,
-  });
+    const inputService = new InputService(containerRef.current, connectionManager.remoteInput);
+    inputService.attach();
+
+    return () => {
+      inputService.detach();
+    };
+  }, [inputEnabled, isConnected]);
 
   // ---- Cursor Tracking for visual overlay -----------------------------------
 
@@ -85,9 +81,8 @@ export const RemoteCanvas: React.FC<RemoteCanvasProps> = ({
         const rect = containerRef.current.getBoundingClientRect();
         setCursorPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
       }
-      remoteInput.handleMouseMove(e);
     },
-    [remoteInput]
+    []
   );
 
   // ---- Fullscreen API -------------------------------------------------------
@@ -139,12 +134,6 @@ export const RemoteCanvas: React.FC<RemoteCanvasProps> = ({
         }`}
         tabIndex={isConnected ? 0 : -1}
         onMouseMove={handleMouseMoveWithCursor}
-        onMouseDown={remoteInput.handleMouseDown}
-        onMouseUp={remoteInput.handleMouseUp}
-        onWheel={remoteInput.handleWheel}
-        onDoubleClick={remoteInput.handleDoubleClick}
-        onKeyDown={remoteInput.handleKeyDown}
-        onKeyUp={remoteInput.handleKeyUp}
         onMouseEnter={() => setShowCursor(true)}
         onMouseLeave={() => setShowCursor(false)}
         style={{ outline: 'none' }}

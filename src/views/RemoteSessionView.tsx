@@ -42,10 +42,14 @@ import {
   WifiOff,
   Copy,
   CheckCheck,
+  Bot,
 } from 'lucide-react';
 
 // WebRTC Hooks
-import { useConnection } from '../hooks/useConnection';
+import { ConnectionPanel } from '../components/ConnectionPanel';
+import { TitleBar } from '../components/TitleBar';
+import { MimirCopilot } from '../components/AI/MimirCopilot';
+import { useConnectionManager } from '../hooks/useConnectionManager';
 import { useClipboard } from '../hooks/useClipboard';
 
 // WebRTC Components
@@ -120,6 +124,7 @@ export const RemoteSessionView: React.FC<RemoteSessionViewProps> = ({
   const [showConnectionPanel, setShowConnectionPanel] = useState(true);
   const [copiedPeerId, setCopiedPeerId] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showCopilot, setShowCopilot] = useState(false);
 
   // ---- Toast Helper ---------------------------------------------------------
   const showToast = useCallback((msg: string) => {
@@ -128,70 +133,64 @@ export const RemoteSessionView: React.FC<RemoteSessionViewProps> = ({
   }, []);
 
   // ---- WebRTC Connection Hook -----------------------------------------------
-  const connection = useConnection({
-    onError: (error: WebRTCError) => {
-      const userMessages: Record<string, string> = {
-        PermissionDenied: 'Screen sharing permission was denied.',
-        ScreenSharingCancelled: 'Screen sharing was cancelled.',
-        PeerUnavailable: `Peer "${targetPeerId}" is unavailable or offline.`,
-        Disconnected: 'Remote session disconnected.',
-        ICEFailure: 'Network connection failed. Check firewall settings.',
-        MediaFailure: 'Failed to access screen capture.',
-        Timeout: 'Connection timed out. Please retry.',
-        SignalingError: 'Signaling server error. Please retry.',
-        Unknown: 'An unexpected connection error occurred.',
-      };
-      showToast(`⚠ ${userMessages[error.type] ?? error.message}`);
-    },
-    onStateChange: (state) => {
-      if (state === 'Connected') {
-        showToast('✓ Remote session established — End-to-end encrypted.');
-        setShowConnectionPanel(false);
-      }
-      if (state === 'Sharing Screen') {
-        showToast('✓ Screen sharing is live.');
-        setShowConnectionPanel(false);
-      }
-      if (state === 'Connection Lost') {
-        showToast('⚠ Connection lost. Attempting to reconnect...');
-      }
-      if (state === 'Disconnected') {
-        setShowConnectionPanel(true);
-      }
-    },
-    onDataReceived: (event) => {
-      if (event.type === 'clipboard:sync') {
-        clipboard.handleIncomingClipboard(event as ClipboardSyncEvent);
-      }
-    },
-  });
+  const { session, remoteStream, error, manager } = useConnectionManager();
+  const remoteVideoRef = React.useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (error) {
+      showToast(`⚠ ${error.message}`);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (session?.status === 'connected') {
+      showToast('✓ Remote session established — End-to-end encrypted.');
+      setShowConnectionPanel(false);
+    }
+    if (session?.status === 'disconnected') {
+      setShowConnectionPanel(true);
+    }
+  }, [session?.status]);
+
+  useEffect(() => {
+    if (remoteStream && remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = remoteStream;
+      remoteVideoRef.current.play().catch(console.error);
+    }
+  }, [remoteStream]);
 
   // ---- Clipboard Hook -------------------------------------------------------
   const clipboard = useClipboard({
-    onSend: (event) => connection.sendDataEvent(event),
+    onSend: (event) => {
+      manager.sendData({ type: 'CLIPBOARD', payload: event });
+    },
     localDirection: sessionMode === 'host' ? 'host-to-viewer' : 'viewer-to-host',
   });
 
   // ---- Cleanup on device change / unmount -----------------------------------
   useEffect(() => {
     return () => {
-      connection.disconnect();
+      manager.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ---- Derived state --------------------------------------------------------
-  const { connectionState, localPeerId, stats, remoteVideoRef } = connection;
+  let connectionState = 'Disconnected';
+  if (session?.status === 'waiting_approval') connectionState = 'Initializing';
+  if (session?.status === 'negotiating') connectionState = 'Connecting';
+  if (session?.status === 'connected') connectionState = 'Connected';
+  if (session?.status === 'failed') connectionState = 'Connection Lost';
+
+  // Connection State Derived
+  const isConnected = connectionState === 'Connected' || connectionState === 'Sharing Screen';
+
+  const localPeerId = manager['myDeviceId'] || '';
+  const stats = { latencyMs: 0, fps: 0, resolution: { width: 0, height: 0 } }; // Will wire real stats later
   const badge = CONNECTION_BADGE[connectionState] ?? CONNECTION_BADGE['Disconnected'];
 
-  const isConnected =
-    connectionState === 'Connected' || connectionState === 'Sharing Screen';
-  const isDisconnected =
-    connectionState === 'Disconnected' || connectionState === 'Connection Lost';
-  const isBusy =
-    connectionState === 'Initializing' ||
-    connectionState === 'Connecting' ||
-    connectionState === 'Reconnecting';
+  const isDisconnected = !session || session.status === 'idle' || session.status === 'disconnected' || session.status === 'failed';
+  const isBusy = session?.status === 'waiting_approval' || session?.status === 'negotiating';
 
   // ---- Simulated mouse position (existing feature, preserved) ---------------
   const handleCanvasMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -212,9 +211,9 @@ export const RemoteSessionView: React.FC<RemoteSessionViewProps> = ({
 
   // ---- Session End ----------------------------------------------------------
   const handleEndSession = useCallback(() => {
-    connection.disconnect();
+    manager.disconnect();
     onEndSession();
-  }, [connection, onEndSession]);
+  }, [manager, onEndSession]);
 
   // ---------------------------------------------------------------------------
   // Render
@@ -293,6 +292,16 @@ export const RemoteSessionView: React.FC<RemoteSessionViewProps> = ({
             title="Sync Clipboard"
           >
             <Clipboard className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={() => setShowCopilot(!showCopilot)}
+            className={`p-2 rounded-xl transition-colors ${
+              showCopilot ? 'bg-[#1A73E8] text-white' : 'text-[#94A3B8] hover:bg-[#334155] hover:text-white'
+            }`}
+            title="Toggle AI Copilot"
+          >
+            <Bot className="w-5 h-5" />
           </button>
 
           <button
@@ -400,11 +409,17 @@ export const RemoteSessionView: React.FC<RemoteSessionViewProps> = ({
               videoRef={remoteVideoRef}
               connectionState={connectionState}
               inputEnabled={!isPaused && sessionMode === 'viewer'}
-              onInputEvent={connection.sendDataEvent}
               isFullscreen={isFullscreen}
             />
           </div>
-        )}
+
+          {/* AI Copilot Side Panel */}
+          {showCopilot && (
+            <div className="w-96 flex-shrink-0 z-10 border-l border-[#334155]">
+              <MimirCopilot />
+            </div>
+          )}
+        </div>
 
         {/* ── CONNECTION PANEL (shown when disconnected / ready) ────────── */}
         {showConnectionPanel && !isConnected && (
@@ -536,10 +551,11 @@ export const RemoteSessionView: React.FC<RemoteSessionViewProps> = ({
                 {/* Panel Footer: Action Buttons */}
                 <div className="px-6 pb-6 space-y-2.5">
                   {/* Initialize */}
-                  {!connection.isInitialized && !isBusy && (
+                  {isDisconnected && !isBusy && (
                     <button
-                      onClick={connection.initialize}
+                      onClick={() => {}} // Remove initialize flow, automatically connected by manager now. Or we can just let it sit.
                       className="w-full flex items-center justify-center space-x-2 py-3 rounded-xl bg-[#1A73E8] hover:bg-[#1557B0] text-white text-sm font-semibold transition-colors"
+                      style={{ display: 'none' }}
                     >
                       <Wifi className="w-4 h-4" />
                       <span>Initialize Connection</span>
@@ -554,23 +570,11 @@ export const RemoteSessionView: React.FC<RemoteSessionViewProps> = ({
                     </div>
                   )}
 
-                  {/* Host: Start sharing */}
-                  {connection.isInitialized && isDisconnected && sessionMode === 'host' && (
-                    <button
-                      onClick={() => connection.startSharing(qualityMode)}
-                      className="w-full flex items-center justify-center space-x-2 py-3 rounded-xl bg-[#34A853] hover:bg-[#2D9248] text-white text-sm font-semibold transition-colors"
-                    >
-                      <Monitor className="w-4 h-4" />
-                      <span>Start Screen Share</span>
-                    </button>
-                  )}
-
                   {/* Viewer: Connect */}
-                  {connection.isInitialized && isDisconnected && sessionMode === 'viewer' && (
+                  {isDisconnected && sessionMode === 'viewer' && (
                     <button
                       onClick={() => {
-                        connection.setTargetPeerId(targetPeerId);
-                        connection.connect();
+                        manager.requestConnection(targetPeerId, '', 'Viewer');
                       }}
                       disabled={!targetPeerId.trim()}
                       className="w-full flex items-center justify-center space-x-2 py-3 rounded-xl bg-[#1A73E8] hover:bg-[#1557B0] text-white text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

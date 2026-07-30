@@ -15,6 +15,10 @@ import { AiInspectorPanel } from './components/AiInspectorPanel';
 import { BottomDock } from './components/BottomDock';
 import { StatusBar } from './components/StatusBar';
 import { CommandPaletteModal } from './components/CommandPaletteModal';
+import { IncomingConnectionDialog } from './components/IncomingConnectionDialog';
+
+import { HostIdentityProvider } from './context/HostIdentityContext';
+import { useConnectionManager } from './hooks/useConnectionManager';
 
 import { DashboardView } from './views/DashboardView';
 import { RemoteSessionView } from './views/RemoteSessionView';
@@ -58,6 +62,42 @@ export function App() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
+  // Connect WebRTC logic to UI transitions
+  const { session, manager } = useConnectionManager();
+
+  useEffect(() => {
+    if (session?.status === 'connected' && !activeRemoteDevice) {
+      // Transition to active remote session
+      const targetId = session.hostDeviceId === manager['myDeviceId'] ? session.clientDeviceId : session.hostDeviceId;
+      setActiveRemoteDevice({
+        id: targetId,
+        rustDeskId: targetId,
+        name: `Node ${targetId}`,
+        hostname: `${targetId}.mimir.net`,
+        os: 'windows',
+        osVersion: 'Windows',
+        status: 'online',
+        trustLevel: 'verified',
+        ipAddress: 'Unknown',
+        macAddress: '',
+        cpuUsage: 0,
+        ramUsage: 0,
+        storageUsage: 0,
+        latencyMs: 0,
+        lastSeen: 'Now',
+        group: 'Session',
+        tags: []
+      });
+      setActiveTab('sessions');
+      showToast('WebRTC Peer Connection Established.');
+    } else if (session?.status === 'disconnected' || session?.status === 'failed') {
+      if (activeRemoteDevice) {
+        handleEndSession();
+        showToast(session.status === 'failed' ? 'Connection failed' : 'Session ended');
+      }
+    }
+  }, [session?.status]);
+
   // Handlers
   const handleStartSession = (device: Device) => {
     setActiveRemoteDevice(device);
@@ -66,10 +106,12 @@ export function App() {
   };
 
   const handleEndSession = (sessionId?: string) => {
+    manager.disconnect();
     setActiveRemoteDevice(null);
     if (sessionId) {
       setSessions(prev => prev.filter(s => s.id !== sessionId));
     }
+    setActiveTab('dashboard');
     showToast('Remote desktop session gracefully terminated.');
   };
 
@@ -159,159 +201,164 @@ export function App() {
   const pendingApprovalsCount = approvals.filter(a => a.status === 'pending').length;
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-[#F8F9FA] text-[#202124] overflow-hidden select-none font-sans">
-      {/* Toast Banner */}
-      {toastMessage && (
-        <div className="fixed top-14 right-6 bg-[#202124] text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-google-lg z-50 flex items-center space-x-2 border border-gray-700 animate-in fade-in slide-in-from-top-2">
-          <span className="w-2 h-2 rounded-full bg-[#34A853]"></span>
-          <span>{toastMessage}</span>
-        </div>
-      )}
+    <HostIdentityProvider>
+      <div className="flex flex-col h-screen bg-[#F8F9FA] overflow-hidden font-sans selection:bg-[#E8F0FE] selection:text-[#1A73E8]">
+        {/* Toast Banner */}
+        {toastMessage && (
+          <div className="fixed top-14 right-6 bg-[#202124] text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-google-lg z-50 flex items-center space-x-2 border border-gray-700 animate-in fade-in slide-in-from-top-2">
+            <span className="w-2 h-2 rounded-full bg-[#34A853]"></span>
+            <span>{toastMessage}</span>
+          </div>
+        )}
 
-      {/* Top Window Titlebar */}
-      <TitleBar
-        workspace={workspace}
-        setWorkspace={setWorkspace}
-        onOpenCommandPalette={() => setCommandPaletteOpen(true)}
-        onQuickConnect={handleQuickConnect}
-        activeSessionCount={activeRemoteDevice ? sessions.length + 1 : sessions.length}
-      />
-
-      {/* Center Body: Sidebar + Main Workspace + AI Inspector Panel */}
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Left Sidebar */}
-        <Sidebar
-          activeTab={activeTab}
-          setActiveTab={(tab) => {
-            setActiveTab(tab);
-          }}
-          collapsed={sidebarCollapsed}
-          setCollapsed={setSidebarCollapsed}
-          pendingApprovalsCount={pendingApprovalsCount}
-          activeSessionsCount={activeRemoteDevice ? sessions.length + 1 : sessions.length}
-          runningTasksCount={2}
+        {/* Top Window Titlebar */}
+        <TitleBar
+          workspace={workspace}
+          setWorkspace={setWorkspace}
+          onOpenCommandPalette={() => setCommandPaletteOpen(true)}
+          onQuickConnect={handleQuickConnect}
+          activeSessionCount={activeRemoteDevice ? sessions.length + 1 : sessions.length}
         />
 
-        {/* Main Workspace Area */}
-        <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA] relative">
-          {activeTab === 'sessions' && activeRemoteDevice ? (
-            <RemoteSessionView
-              device={activeRemoteDevice}
-              onEndSession={() => handleEndSession()}
-              onOpenAiPanel={() => setAiPanelOpen(true)}
-              onOpenFileTransfer={() => setActiveTab('files')}
-            />
-          ) : (
-            <>
-              {activeTab === 'dashboard' && (
-                <DashboardView
-                  devices={devices}
-                  sessions={sessions}
-                  pendingApprovalsCount={pendingApprovalsCount}
-                  workflows={workflows}
-                  onStartSession={handleStartSession}
-                  onQuickConnect={handleQuickConnect}
-                  onRunWorkflow={handleRunWorkflow}
-                  onNavigateTab={setActiveTab}
-                />
-              )}
-
-              {activeTab === 'devices' && (
-                <DevicesView
-                  devices={devices}
-                  onStartSession={handleStartSession}
-                  onRunAiAction={(dev) => {
-                    handleRunQuickAiAction(`Diagnose Node ${dev.name}`);
-                    setAiPanelOpen(true);
-                  }}
-                  onOpenFileTransfer={() => setActiveTab('files')}
-                />
-              )}
-
-              {activeTab === 'sessions' && (
-                <SessionsView
-                  sessions={sessions}
-                  onEndSession={handleEndSession}
-                />
-              )}
-
-              {activeTab === 'address-book' && (
-                <AddressBookView
-                  devices={devices}
-                  onStartSession={handleStartSession}
-                />
-              )}
-
-              {activeTab === 'automation' && (
-                <AutomationView
-                  workflows={workflows}
-                  onRunWorkflow={handleRunWorkflow}
-                />
-              )}
-
-              {activeTab === 'tasks' && <TasksView />}
-
-              {activeTab === 'approvals' && (
-                <ApprovalsView
-                  approvals={approvals}
-                  onApprove={handleApproveSecurity}
-                  onReject={handleRejectSecurity}
-                />
-              )}
-
-              {activeTab === 'analytics' && <AnalyticsView />}
-
-              {activeTab === 'files' && <FileTransferView transfers={transfers} />}
-
-              {activeTab === 'ai-memory' && <AiMemoryView />}
-
-              {activeTab === 'logs' && <LogsView />}
-
-              {activeTab === 'settings' && <SettingsView />}
-
-              {activeTab === 'profile' && <ProfileView />}
-            </>
-          )}
-
-          {/* Bottom Panel Dock */}
-          <BottomDock
-            isExpanded={bottomDockExpanded}
-            setIsExpanded={setBottomDockExpanded}
-            transfers={transfers}
+        {/* Center Body: Sidebar + Main Workspace + AI Inspector Panel */}
+        <div className="flex flex-1 overflow-hidden relative">
+          {/* Left Sidebar */}
+          <Sidebar
+            activeTab={activeTab}
+            setActiveTab={(tab) => {
+              setActiveTab(tab);
+            }}
+            collapsed={sidebarCollapsed}
+            setCollapsed={setSidebarCollapsed}
+            pendingApprovalsCount={pendingApprovalsCount}
+            activeSessionsCount={activeRemoteDevice ? sessions.length + 1 : sessions.length}
+            runningTasksCount={2}
           />
-        </main>
 
-        {/* Right Collapsible AI Inspector Panel */}
-        <AiInspectorPanel
-          isOpen={aiPanelOpen}
-          setIsOpen={setAiPanelOpen}
-          steps={aiSteps}
-          onApproveStep={handleApproveStep}
-          onRejectStep={handleRejectStep}
-          onRetryStep={handleRetryStep}
-          onStopExecution={handleStopExecution}
-          onRunQuickAction={handleRunQuickAiAction}
+          {/* Main Workspace Area */}
+          <main className="flex-1 flex flex-col overflow-hidden bg-[#F8F9FA] relative">
+            {activeTab === 'sessions' && activeRemoteDevice ? (
+              <RemoteSessionView
+                device={activeRemoteDevice}
+                onEndSession={() => handleEndSession()}
+                onOpenAiPanel={() => setAiPanelOpen(true)}
+                onOpenFileTransfer={() => setActiveTab('files')}
+              />
+            ) : (
+              <>
+                {activeTab === 'dashboard' && (
+                  <DashboardView
+                    devices={devices}
+                    sessions={sessions}
+                    pendingApprovalsCount={pendingApprovalsCount}
+                    workflows={workflows}
+                    onStartSession={handleStartSession}
+                    onQuickConnect={handleQuickConnect}
+                    onRunWorkflow={handleRunWorkflow}
+                    onNavigateTab={setActiveTab}
+                  />
+                )}
+
+                {activeTab === 'devices' && (
+                  <DevicesView
+                    devices={devices}
+                    onStartSession={handleStartSession}
+                    onRunAiAction={(dev) => {
+                      handleRunQuickAiAction(`Diagnose Node ${dev.name}`);
+                      setAiPanelOpen(true);
+                    }}
+                    onOpenFileTransfer={() => setActiveTab('files')}
+                  />
+                )}
+
+                {activeTab === 'sessions' && (
+                  <SessionsView
+                    sessions={sessions}
+                    onEndSession={handleEndSession}
+                  />
+                )}
+
+                {activeTab === 'address-book' && (
+                  <AddressBookView
+                    devices={devices}
+                    onStartSession={handleStartSession}
+                  />
+                )}
+
+                {activeTab === 'automation' && (
+                  <AutomationView
+                    workflows={workflows}
+                    onRunWorkflow={handleRunWorkflow}
+                  />
+                )}
+
+                {activeTab === 'tasks' && <TasksView />}
+
+                {activeTab === 'approvals' && (
+                  <ApprovalsView
+                    approvals={approvals}
+                    onApprove={handleApproveSecurity}
+                    onReject={handleRejectSecurity}
+                  />
+                )}
+
+                {activeTab === 'analytics' && <AnalyticsView />}
+
+                {activeTab === 'files' && <FileTransferView transfers={transfers} />}
+
+                {activeTab === 'ai-memory' && <AiMemoryView />}
+
+                {activeTab === 'logs' && <LogsView />}
+
+                {activeTab === 'settings' && <SettingsView />}
+
+                {activeTab === 'profile' && <ProfileView />}
+              </>
+            )}
+
+            {/* Bottom Panel Dock */}
+            <BottomDock
+              isExpanded={bottomDockExpanded}
+              setIsExpanded={setBottomDockExpanded}
+              transfers={transfers}
+            />
+          </main>
+
+          {/* Right Collapsible AI Inspector Panel */}
+          <AiInspectorPanel
+            isOpen={aiPanelOpen}
+            setIsOpen={setAiPanelOpen}
+            steps={aiSteps}
+            onApproveStep={handleApproveStep}
+            onRejectStep={handleRejectStep}
+            onRetryStep={handleRetryStep}
+            onStopExecution={handleStopExecution}
+            onRunQuickAction={handleRunQuickAiAction}
+          />
+        </div>
+
+        {/* Bottom Status Bar */}
+        <StatusBar
+          deviceCount={devices.length}
+          activeSessionCount={activeRemoteDevice ? sessions.length + 1 : sessions.length}
+          aiEngineStatus="Supervising 2 Nodes (99.4% Precision)"
         />
+
+        {/* Global Modals & Dialogs */}
+        <CommandPaletteModal
+          isOpen={commandPaletteOpen}
+          onClose={() => setCommandPaletteOpen(false)}
+          onSelectTab={setActiveTab}
+          onQuickConnect={handleQuickConnect}
+          onRunAiAction={(act) => {
+            handleRunQuickAiAction(act);
+            setAiPanelOpen(true);
+          }}
+        />
+        
+        {/* Connection Dialog triggers on incoming request */}
+        <IncomingConnectionDialog />
       </div>
-
-      {/* Bottom Status Bar */}
-      <StatusBar
-        deviceCount={devices.length}
-        activeSessionCount={activeRemoteDevice ? sessions.length + 1 : sessions.length}
-        aiEngineStatus="Supervising 2 Nodes (99.4% Precision)"
-      />
-
-      {/* Universal Command Palette Modal */}
-      <CommandPaletteModal
-        isOpen={commandPaletteOpen}
-        onClose={() => setCommandPaletteOpen(false)}
-        onSelectTab={setActiveTab}
-        onQuickConnect={handleQuickConnect}
-        onRunAiAction={(act) => {
-          handleRunQuickAiAction(act);
-          setAiPanelOpen(true);
-        }}
-      />
     </div>
   );
 }
