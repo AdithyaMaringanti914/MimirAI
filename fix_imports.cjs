@@ -8,7 +8,7 @@ const types = [
   'MouseMoveEvent', 'KeyboardEvent', 'ObservationResult', 'Observation',
   'ProviderContext', 'WindowInfo', 'ExecuteShellPayload', 'LaunchApplicationPayload',
   'ClickCoordinatesPayload', 'TypeStringPayload', 'Intent', 'Plan', 'WorkflowNode',
-  'RequestPayload'
+  'RequestPayload', 'PerceptionProvider', 'ObservationContext', 'ProviderConfig'
 ];
 
 function processFile(filePath) {

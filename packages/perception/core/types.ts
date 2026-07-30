@@ -31,12 +31,14 @@ export interface ObservationResult {
   observations: Observation[];
 }
 
-export enum ProviderHealth {
-  Ready = 'Ready',
-  Busy = 'Busy',
-  Degraded = 'Degraded',
-  Offline = 'Offline'
-}
+export const ProviderHealth = {
+  Ready: 'Ready',
+  Busy: 'Busy',
+  Degraded: 'Degraded',
+  Offline: 'Offline'
+} as const;
+
+export type ProviderHealth = typeof ProviderHealth[keyof typeof ProviderHealth];
 
 export interface ProviderConfig {
   enabled: boolean;

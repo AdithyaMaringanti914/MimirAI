@@ -1,4 +1,4 @@
-import { ProviderConfig } from '../core/types';
+import { type ProviderConfig } from '../core/types';
 
 export class ConfigurationManager {
   private static defaultConfigs: Record<string, ProviderConfig> = {

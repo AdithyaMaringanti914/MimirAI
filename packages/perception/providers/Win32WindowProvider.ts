@@ -1,4 +1,4 @@
-import { PerceptionProvider, ObservationContext, type ObservationResult, Observation, ProviderHealth, type ProviderContext } from '../core/types';
+import { type PerceptionProvider, type ObservationContext, type ObservationResult, Observation, ProviderHealth, type ProviderContext } from '../core/types';
 import WebSocket from 'ws';
 
 export class Win32WindowProvider implements PerceptionProvider {

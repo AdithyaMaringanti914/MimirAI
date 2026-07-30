@@ -1,7 +1,7 @@
 import { LLMClient } from './LLMClient';
 import { type SceneGraph } from '../domain/SceneGraph';
 import { type Action } from '../domain/Action';
-import { type Goal } from '../domain/Intent';
+import { type Goal } from '../domain/type Intent';
 
 export class DynamicPlanner {
   public async determineNextAction(goal: Goal, currentScene: SceneGraph, history: string[]): Promise<Action | null> {

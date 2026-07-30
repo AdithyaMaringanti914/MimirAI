@@ -1,6 +1,6 @@
 import { type SceneGraph } from '../../ai/domain/SceneGraph';
 import { type Action } from '../../ai/domain/Action';
-import { type Goal } from '../../ai/domain/Intent';
+import { type Goal } from '../../ai/domain/type Intent';
 
 export class ChromeAdapter {
   

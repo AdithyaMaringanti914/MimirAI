@@ -1,4 +1,4 @@
-import { PerceptionProvider, ProviderHealth, type ProviderContext } from '../core/types';
+import { type PerceptionProvider, ProviderHealth, type ProviderContext } from '../core/types';
 import { EventBus } from '../events/EventBus';
 import { TelemetryManager } from '../telemetry/Telemetry';
 import { ConfigurationManager } from '../config/ConfigurationManager';

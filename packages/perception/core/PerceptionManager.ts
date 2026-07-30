@@ -1,5 +1,5 @@
 import { ProviderRegistry } from '../providers/ProviderRegistry';
-import { ObservationContext, type ObservationResult, PerceptionProvider } from '../core/types';
+import { type ObservationContext, type ObservationResult, type PerceptionProvider } from '../core/types';
 import { EventBus } from '../events/EventBus';
 import { ConfidenceFusion } from '../fusion/ConfidenceFusion';
 import { SceneGraphBuilder } from '../scenegraph/SceneGraphBuilder';
