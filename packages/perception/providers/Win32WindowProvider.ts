@@ -1,10 +1,10 @@
-import { type PerceptionProvider, type ObservationContext, type ObservationResult, Observation, ProviderHealth, type ProviderContext } from '../core/types';
+import { type PerceptionProvider, type ObservationContext, type ObservationResult, type Observation, ProviderHealth, type ProviderContext } from '../core/types';
 import WebSocket from 'ws';
 
 export class Win32WindowProvider implements PerceptionProvider {
-  private _health = ProviderHealth.Offline;
+  private _health: ProviderHealth = ProviderHealth.Offline;
   private ws: WebSocket | null = null;
-  private cachedWindows: any[] = [];
+  // private cachedWindows: WindowInfo[] = [];
   private eventBus: any = null;
 
   public id(): string { return 'Win32Window'; }
@@ -51,7 +51,7 @@ export class Win32WindowProvider implements PerceptionProvider {
     return this._health === ProviderHealth.Ready; 
   }
 
-  public async observe(ctx: ObservationContext): Promise<ObservationResult> {
+  public async observe(_ctx: ObservationContext): Promise<ObservationResult> {
     const obs: Observation[] = [];
     
     // We fetch the windows from Go Agent REST API or WebSocket for the actual observation cycle

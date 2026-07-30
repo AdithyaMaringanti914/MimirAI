@@ -8,7 +8,7 @@ export class GeminiVisionProvider implements PerceptionProvider {
   public version(): string { return '1.0.0'; }
   public priority(): number { return 5; }
 
-  public async initialize(ctx: ProviderContext): Promise<void> {}
+  public async initialize(_ctx: ProviderContext): Promise<void> {}
 
   public async health(): Promise<ProviderHealth> {
     return this._health;
@@ -19,7 +19,7 @@ export class GeminiVisionProvider implements PerceptionProvider {
     return !!ctx.screenshot; 
   }
 
-  public async observe(ctx: ObservationContext): Promise<ObservationResult> {
+  public async observe(_ctx: ObservationContext): Promise<ObservationResult> {
     const start = performance.now();
     // Stub: Normally calls LLMClient
     return {

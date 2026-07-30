@@ -1,8 +1,8 @@
-import { type PerceptionProvider, type ObservationContext, type ObservationResult, Observation, ProviderHealth, type ProviderContext } from '../core/types';
+import { type PerceptionProvider, type ObservationContext, type ObservationResult, type Observation, ProviderHealth, type ProviderContext } from '../core/types';
 import WebSocket from 'ws';
 
 export class WindowsUIAProvider implements PerceptionProvider {
-  private _health = ProviderHealth.Offline;
+  private _health: ProviderHealth = ProviderHealth.Offline;
   private ws: WebSocket | null = null;
   private eventBus: any = null;
 
@@ -46,7 +46,7 @@ export class WindowsUIAProvider implements PerceptionProvider {
     return this._health;
   }
 
-  public async canObserve(ctx: ObservationContext): Promise<boolean> {
+  public async canObserve(_ctx: ObservationContext): Promise<boolean> {
     return this._health === ProviderHealth.Ready; 
   }
 
@@ -59,7 +59,7 @@ export class WindowsUIAProvider implements PerceptionProvider {
     return false;
   }
 
-  public async observe(ctx: ObservationContext): Promise<ObservationResult> {
+  public async observe(_ctx: ObservationContext): Promise<ObservationResult> {
     const obs: Observation[] = [];
     
     try {
