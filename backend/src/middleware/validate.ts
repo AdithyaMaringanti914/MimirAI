@@ -9,8 +9,8 @@ export const validate = (schema: ZodSchema) => {
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        logger.warn('Validation error', error.errors);
-        res.status(400).json({ error: 'Invalid payload', details: error.errors });
+        logger.warn({ details: error.issues }, 'Validation error');
+        res.status(400).json({ error: 'Invalid payload', details: error.issues });
       } else {
         next(error);
       }

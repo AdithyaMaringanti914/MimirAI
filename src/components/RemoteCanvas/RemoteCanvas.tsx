@@ -18,9 +18,8 @@ import React, {
   useState,
 } from 'react';
 import { Monitor, Loader2, WifiOff } from 'lucide-react';
-import { InputService } from '../../../services/InputService';
-import { connectionManager } from '../../../services/connection/ConnectionManager';
-import type { ConnectionState } from '../../../services/connection/types/session';
+import { InputService } from '../../services/InputService';
+import { connectionManager } from '../../services/connection/ConnectionManager';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -30,7 +29,7 @@ export interface RemoteCanvasProps {
   /** Ref from useWebRTC to bind to the <video> element */
   videoRef: React.RefObject<HTMLVideoElement | null>;
   /** Current connection state for rendering placeholder states */
-  connectionState: ConnectionState;
+  connectionState: string;
   /** Whether to capture and transmit mouse/keyboard input */
   inputEnabled?: boolean;
   /** Removed onInputEvent in favor of direct InputService dispatching */

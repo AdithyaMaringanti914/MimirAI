@@ -1,4 +1,4 @@
-import { RemoteInput } from './RemoteInput';
+import { type RemoteInput } from './RemoteInput';
 
 export interface CursorState extends RemoteInput {
   type: 'cursor.position';

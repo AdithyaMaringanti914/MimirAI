@@ -1,4 +1,4 @@
-import { Session, SessionStatus } from './types/session';
+import type { Session, SessionStatus } from './types/session';
 
 export class SessionManager {
   private currentSession: Session | null = null;

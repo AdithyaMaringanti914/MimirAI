@@ -1,6 +1,6 @@
-import { SceneGraph } from '../ai/domain/SceneGraph';
-import { Action } from '../ai/domain/Action';
-import { Goal } from '../ai/domain/Intent';
+import { type SceneGraph } from '../ai/domain/SceneGraph';
+import { type Action } from '../ai/domain/Action';
+import { type Goal } from '../ai/domain/Intent';
 import { GenericWindowsAdapter } from './adapters/GenericWindowsAdapter';
 import { DynamicPlanner } from '../ai/engines/DynamicPlanner';
 

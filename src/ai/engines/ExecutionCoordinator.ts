@@ -1,8 +1,8 @@
 import { SafetyEngine } from './SafetyEngine';
 import { executionBus } from '../bus/ExecutionBus';
-import { Goal } from '../domain/Intent';
-import { SceneGraph } from '../domain/SceneGraph';
-import { Action } from '../domain/Action';
+import { type Goal } from '../domain/Intent';
+import { type SceneGraph } from '../domain/SceneGraph';
+import { type Action } from '../domain/Action';
 import { HybridDecisionEngine } from '../../perception/HybridDecisionEngine';
 import { ScreenChangeDetector } from '../../perception/ScreenChangeDetector';
 import { PerceptionManager, WorldModel, ProviderRegistry, WindowsUIAProvider, BrowserCDPProvider, Win32WindowProvider, OCRProvider, GeminiVisionProvider } from '../../../packages/perception';

@@ -1,4 +1,4 @@
-import { SceneGraph } from '../ai/domain/SceneGraph';
+import { type SceneGraph } from '../ai/domain/SceneGraph';
 
 export class ScreenChangeDetector {
   public static detectChanges(prev: SceneGraph | null, curr: SceneGraph): string[] {

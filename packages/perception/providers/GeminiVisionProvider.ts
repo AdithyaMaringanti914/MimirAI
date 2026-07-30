@@ -1,4 +1,4 @@
-import { PerceptionProvider, ObservationContext, ObservationResult, ProviderHealth, ProviderContext } from '../core/types';
+import { PerceptionProvider, ObservationContext, type ObservationResult, ProviderHealth, type ProviderContext } from '../core/types';
 
 export class GeminiVisionProvider implements PerceptionProvider {
   private _health = ProviderHealth.Ready;

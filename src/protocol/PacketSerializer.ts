@@ -1,5 +1,5 @@
-import { Packet } from './Packet';
-import { RemoteInput } from '../domain/RemoteInput';
+import type { Packet } from './Packet';
+import { type RemoteInput } from '../domain/RemoteInput';
 
 export class PacketSerializer {
   public static serialize(

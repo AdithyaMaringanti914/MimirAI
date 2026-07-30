@@ -63,7 +63,7 @@ export const rotatePassword = async (req: Request, res: Response, next: NextFunc
 
 export const getDevice = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { deviceId } = req.params;
+    const deviceId = req.params.deviceId as string;
     const device = await repo.getDeviceById(deviceId);
     if (!device) {
       return res.status(404).json({ error: 'Device not found' });

@@ -1,6 +1,6 @@
 import { RemoteInputManager } from '../managers/RemoteInputManager';
-import { MouseButton, MouseButtonEvent, MouseMoveEvent, MouseScrollEvent } from '../domain/MouseEvent';
-import { KeyboardEvent } from '../domain/KeyboardEvent';
+import { MouseButton, type MouseButtonEvent, type MouseMoveEvent, type MouseScrollEvent } from '../domain/MouseEvent';
+import { type KeyboardEvent } from '../domain/KeyboardEvent';
 
 export class InputService {
   private container: HTMLElement;

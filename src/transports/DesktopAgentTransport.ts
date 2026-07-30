@@ -1,7 +1,7 @@
-import { Packet } from '../protocol/Packet';
+import type { Packet } from '../protocol/Packet';
 import { PacketValidator } from '../protocol/PacketValidator';
 import { PacketSerializer } from '../protocol/PacketSerializer';
-import { RemoteInput } from '../domain/RemoteInput';
+import { type RemoteInput } from '../domain/RemoteInput';
 import { SignalingManager } from '../services/connection/SignalingManager';
 
 export class DesktopAgentTransport {

@@ -1,4 +1,4 @@
-import { MonitorInfo } from '../domain/Monitor';
+import { type MonitorInfo } from '../domain/Monitor';
 
 export class MonitorManager {
   private monitors: MonitorInfo[] = [];

@@ -1,5 +1,5 @@
 import { LLMClient } from './LLMClient';
-import { SceneGraph } from '../domain/SceneGraph';
+import { type SceneGraph } from '../domain/SceneGraph';
 import { executionBus } from '../bus/ExecutionBus';
 
 export class VisionEngine {

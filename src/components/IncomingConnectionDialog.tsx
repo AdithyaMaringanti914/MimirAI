@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useConnectionManager } from '../hooks/useConnectionManager';
 import { ShieldAlert, ShieldCheck, User, Laptop2, X, Check } from 'lucide-react';
-import { RequestPayload } from '../services/connection/types/socket';
+import { type RequestPayload } from '../services/connection/types/socket';
 
 export const IncomingConnectionDialog: React.FC = () => {
   const { manager } = useConnectionManager();

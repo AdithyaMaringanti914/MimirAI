@@ -1,4 +1,4 @@
-import { Action } from '../domain/Action';
+import { type Action } from '../domain/Action';
 
 export class SafetyEngine {
   public validateAction(action: Action): 'Safe' | 'ConfirmationRequired' | 'Blocked' {

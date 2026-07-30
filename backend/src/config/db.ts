@@ -9,7 +9,7 @@ const pool = new Pool({
 });
 
 pool.on('error', (err) => {
-  logger.error('Unexpected error on idle pg client', err);
+  logger.error(err, 'Unexpected error on idle pg client');
   process.exit(-1);
 });
 

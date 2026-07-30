@@ -1,6 +1,6 @@
-import { Observation, WindowInfo } from '../core/types';
-import { SceneGraph } from '../../src/ai/domain/SceneGraph';
-import { UIElement } from '../../src/ai/domain/SceneGraph';
+import { type Observation, type WindowInfo } from '../core/types';
+import { type SceneGraph } from '../../src/ai/domain/SceneGraph';
+import { type UIElement } from '../../src/ai/domain/SceneGraph';
 
 export class SceneGraphBuilder {
   public static build(

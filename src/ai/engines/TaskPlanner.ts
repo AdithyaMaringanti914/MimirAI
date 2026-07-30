@@ -1,5 +1,5 @@
-import { Goal } from '../domain/Intent';
-import { Plan, WorkflowNode } from '../domain/WorkflowNode';
+import { type Goal } from '../domain/Intent';
+import { type Plan, type WorkflowNode } from '../domain/WorkflowNode';
 import { LLMClient } from './LLMClient';
 
 export class TaskPlanner {

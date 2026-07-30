@@ -74,7 +74,8 @@ func EnumerateWindows() ([]WindowInfo, error) {
 			}
 
 			// Get State
-			style, _, _ := procGetWindowLongW.Call(uintptr(hwnd), uintptr(GWL_STYLE))
+			gwlStyle := int32(GWL_STYLE)
+			style, _, _ := procGetWindowLongW.Call(uintptr(hwnd), uintptr(gwlStyle))
 			state := "Normal"
 			if style&WS_MINIMIZE != 0 {
 				state = "Minimized"

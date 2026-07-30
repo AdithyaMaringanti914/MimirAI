@@ -1,4 +1,4 @@
-import { DataMessage, DataMessageSchema } from './types/protocol';
+import { type DataMessage, DataMessageSchema } from './types/protocol';
 
 export class DataChannelManager {
   private channel: RTCDataChannel | null = null;

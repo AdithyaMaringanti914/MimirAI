@@ -1,4 +1,4 @@
-import { CursorState } from '../domain/CursorState';
+import { type CursorState } from '../domain/CursorState';
 
 export class CursorManager {
   private currentState: CursorState = {

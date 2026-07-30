@@ -7,17 +7,28 @@ namespace UIAMonitor
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("{\"type\": \"MonitorStarted\", \"status\": \"Ready\"}");
-
-            // Listen for focus changes
-            AutomationFocusChangedEventHandler focusHandler = new AutomationFocusChangedEventHandler(OnFocusChanged);
-            Automation.AddAutomationFocusChangedEventHandler(focusHandler);
-
-            // Keep the application running
-            while (true)
+            try
             {
-                System.Threading.Thread.Sleep(100);
+                Console.WriteLine("{\"type\": \"MonitorStarted\", \"status\": \"Ready\"}");
+
+                AutomationFocusChangedEventHandler focusHandler = new AutomationFocusChangedEventHandler(OnFocusChanged);
+                Automation.AddAutomationFocusChangedEventHandler(focusHandler);
+
+                while (true)
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
             }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Fatal Error: " + ex.Message);
+            }
+        }
+
+        private static string EscapeJson(string str)
+        {
+            if (string.IsNullOrEmpty(str)) return "";
+            return str.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r");
         }
 
         private static void OnFocusChanged(object sender, AutomationEventArgs e)
@@ -28,31 +39,23 @@ namespace UIAMonitor
                 if (element != null)
                 {
                     var bounds = element.Current.BoundingRectangle;
-                    var payload = new System.Collections.Generic.Dictionary<string, object>
-                    {
-                        { "type", "FocusChanged" },
-                        { "automationId", element.Current.AutomationId },
-                        { "name", element.Current.Name },
-                        { "className", element.Current.ClassName },
-                        { "controlType", element.Current.ControlType.ProgrammaticName },
-                        { "bounds", new System.Collections.Generic.Dictionary<string, double>
-                            {
-                                { "x", bounds.X },
-                                { "y", bounds.Y },
-                                { "width", bounds.Width },
-                                { "height", bounds.Height }
-                            }
-                        }
-                    };
+                    var aid = EscapeJson(element.Current.AutomationId);
+                    var name = EscapeJson(element.Current.Name);
+                    var className = EscapeJson(element.Current.ClassName);
+                    var ctype = EscapeJson(element.Current.ControlType.ProgrammaticName);
+                    
+                    string json = string.Format(
+                        "{{\"type\":\"FocusChanged\",\"automationId\":\"{0}\",\"name\":\"{1}\",\"className\":\"{2}\",\"controlType\":\"{3}\",\"bounds\":{{\"x\":{4},\"y\":{5},\"width\":{6},\"height\":{7}}}}}",
+                        aid, name, className, ctype,
+                        bounds.X, bounds.Y, bounds.Width, bounds.Height
+                    );
 
-                    var serializer = new System.Web.Script.Serialization.JavaScriptSerializer();
-                    Console.WriteLine(serializer.Serialize(payload));
+                    Console.WriteLine(json);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Ignore exceptions caused by elements disappearing or access denied
-                // Console.Error.WriteLine(ex.Message);
+                // Ignore transient errors
             }
         }
     }

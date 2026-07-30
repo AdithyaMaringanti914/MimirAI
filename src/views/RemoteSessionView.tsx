@@ -46,8 +46,7 @@ import {
 } from 'lucide-react';
 
 // WebRTC Hooks
-import { ConnectionPanel } from '../components/ConnectionPanel';
-import { TitleBar } from '../components/TitleBar';
+
 import { MimirCopilot } from '../components/AI/MimirCopilot';
 import { useConnectionManager } from '../hooks/useConnectionManager';
 import { useClipboard } from '../hooks/useClipboard';
@@ -58,8 +57,7 @@ import { LatencyBadge } from '../components/LatencyBadge/LatencyBadge';
 
 // Types
 import type { StreamQuality, SessionMode } from '../types/webrtc';
-import type { WebRTCError } from '../types/webrtc';
-import type { ClipboardSyncEvent } from '../types/events';
+
 
 // ---------------------------------------------------------------------------
 // Props
@@ -162,7 +160,7 @@ export const RemoteSessionView: React.FC<RemoteSessionViewProps> = ({
   // ---- Clipboard Hook -------------------------------------------------------
   const clipboard = useClipboard({
     onSend: (event) => {
-      manager.sendData({ type: 'CLIPBOARD', payload: event });
+      manager.remoteInput.dispatchClipboard({ type: 'CLIPBOARD', payload: event } as any);
     },
     localDirection: sessionMode === 'host' ? 'host-to-viewer' : 'viewer-to-host',
   });
@@ -380,46 +378,48 @@ export const RemoteSessionView: React.FC<RemoteSessionViewProps> = ({
 
         {/* ── LIVE WebRTC Stream (shown when connected) ─────────────────── */}
         {isConnected && (
-          <div className="absolute inset-6 flex flex-col z-10">
-            {/* Connection Status Bar */}
-            <div className="h-8 bg-[#0F172A] border-b border-gray-700 px-4 flex items-center justify-between text-xs text-gray-300 flex-shrink-0">
-              <div className="flex items-center space-x-3">
-                <span className="font-bold text-white flex items-center space-x-1.5">
-                  <Monitor className="w-4 h-4 text-[#1A73E8]" />
-                  <span>{device.name} — {device.osVersion}</span>
-                </span>
-                <span className="text-[11px] text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800 flex items-center space-x-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>
-                    {connectionState === 'Sharing Screen' ? 'Screen Sharing (AES-256)' : 'P2P Connected (AES-256)'}
+          <>
+            <div className="absolute inset-6 flex flex-col z-10">
+              {/* Connection Status Bar */}
+              <div className="h-8 bg-[#0F172A] border-b border-gray-700 px-4 flex items-center justify-between text-xs text-gray-300 flex-shrink-0">
+                <div className="flex items-center space-x-3">
+                  <span className="font-bold text-white flex items-center space-x-1.5">
+                    <Monitor className="w-4 h-4 text-[#1A73E8]" />
+                    <span>{device.name} — {device.osVersion}</span>
                   </span>
-                </span>
+                  <span className="text-[11px] text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800 flex items-center space-x-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>
+                      {connectionState === 'Sharing Screen' ? 'Screen Sharing (AES-256)' : 'P2P Connected (AES-256)'}
+                    </span>
+                  </span>
+                </div>
+                <div className="flex items-center space-x-3 text-[11px]">
+                  {stats.fps > 0 && <span>{stats.fps} FPS</span>}
+                  {stats.latencyMs > 0 && <span>{stats.latencyMs} ms</span>}
+                  {stats.resolution.width > 0 && (
+                    <span>{stats.resolution.width}×{stats.resolution.height}</span>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center space-x-3 text-[11px]">
-                {stats.fps > 0 && <span>{stats.fps} FPS</span>}
-                {stats.latencyMs > 0 && <span>{stats.latencyMs} ms</span>}
-                {stats.resolution.width > 0 && (
-                  <span>{stats.resolution.width}×{stats.resolution.height}</span>
-                )}
-              </div>
+
+              {/* Live Video Canvas */}
+              <RemoteCanvas
+                videoRef={remoteVideoRef}
+                connectionState={connectionState}
+                inputEnabled={!isPaused && sessionMode === 'viewer'}
+                isFullscreen={isFullscreen}
+              />
             </div>
 
-            {/* Live Video Canvas */}
-            <RemoteCanvas
-              videoRef={remoteVideoRef}
-              connectionState={connectionState}
-              inputEnabled={!isPaused && sessionMode === 'viewer'}
-              isFullscreen={isFullscreen}
-            />
-          </div>
-
-          {/* AI Copilot Side Panel */}
-          {showCopilot && (
-            <div className="w-96 flex-shrink-0 z-10 border-l border-[#334155]">
-              <MimirCopilot />
-            </div>
-          )}
-        </div>
+            {/* AI Copilot Side Panel */}
+            {showCopilot && (
+              <div className="w-96 flex-shrink-0 z-10 border-l border-[#334155]">
+                <MimirCopilot />
+              </div>
+            )}
+          </>
+        )}
 
         {/* ── CONNECTION PANEL (shown when disconnected / ready) ────────── */}
         {showConnectionPanel && !isConnected && (
@@ -534,8 +534,8 @@ export const RemoteSessionView: React.FC<RemoteSessionViewProps> = ({
                         placeholder="Paste the host's Connection ID..."
                         className="w-full font-mono text-sm bg-white border border-[#E5E7EB] rounded-xl px-3 py-2.5 text-[#202124] placeholder-[#9AA0A6] focus:outline-none focus:border-[#1A73E8] focus:ring-2 focus:ring-[#1A73E8]/20 transition-all disabled:bg-[#F8F9FA]"
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter' && connection.isInitialized && targetPeerId.trim()) {
-                            connection.connect();
+                          if (e.key === 'Enter' && targetPeerId.trim()) {
+                            manager.requestConnection(targetPeerId, '', 'Viewer');
                           }
                         }}
                       />

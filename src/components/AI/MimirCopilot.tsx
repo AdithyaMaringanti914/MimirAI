@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Play, Loader2, StopCircle } from 'lucide-react';
 import { IntentAnalyzer } from '../../ai/engines/IntentAnalyzer';
 import { ExecutionCoordinator } from '../../ai/engines/ExecutionCoordinator';
-import { SceneGraph } from '../../ai/domain/SceneGraph';
+import { type SceneGraph } from '../../ai/domain/SceneGraph';
 
 export const MimirCopilot: React.FC = () => {
   const [input, setInput] = useState('');

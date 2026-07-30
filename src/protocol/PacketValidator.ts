@@ -1,4 +1,4 @@
-import { Packet, PacketSchema } from './Packet';
+import { PacketSchema, type Packet } from './Packet';
 
 export class PacketValidator {
   public static parseAndValidate(rawData: string): Packet {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { connectionManager } from '../services/connection/ConnectionManager';
-import { Session } from '../services/connection/types/session';
+import type { Session } from '../services/connection/types/session';
 
 export function useConnectionManager() {
   const [session, setSession] = useState<Session | null>(connectionManager.session.session);

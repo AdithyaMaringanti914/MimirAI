@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { NavigationTab, Device, ActiveSession, ApprovalRequest, AiExecutionStep, FileTransferItem, WorkflowTemplate } from './types';
 import {
   INITIAL_DEVICES,
@@ -359,7 +359,7 @@ export function App() {
         {/* Connection Dialog triggers on incoming request */}
         <IncomingConnectionDialog />
       </div>
-    </div>
+    </HostIdentityProvider>
   );
 }
 

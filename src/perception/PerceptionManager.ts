@@ -1,4 +1,4 @@
-import { SceneGraph } from '../ai/domain/SceneGraph';
+import { type SceneGraph } from '../ai/domain/SceneGraph';
 import { executionBus } from '../ai/bus/ExecutionBus';
 import { FrameHasher } from './FrameHasher';
 import { SceneGraphBuilder } from './SceneGraphBuilder';

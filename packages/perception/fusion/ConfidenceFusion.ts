@@ -1,4 +1,4 @@
-import { ObservationResult, Observation } from '../core/types';
+import { type ObservationResult, Observation } from '../core/types';
 
 export class ConfidenceFusion {
   public static fuse(results: ObservationResult[]): Observation[] {

@@ -5,8 +5,8 @@ import { MediaManager } from './MediaManager';
 import { RemoteInputManager } from '../../managers/RemoteInputManager';
 import { RTCTransport } from '../../transports/RTCTransport';
 import { DesktopAgentTransport } from '../../transports/DesktopAgentTransport';
-import { RequestPayload, ApprovalPayload, OfferPayload, AnswerPayload, IcePayload } from './types/socket';
-import { Packet } from '../../protocol/Packet';
+import type { RequestPayload, ApprovalPayload, OfferPayload, AnswerPayload, IcePayload } from './types/socket';
+import type { Packet } from '../../protocol/Packet';
 
 type ConnectionEvent = 'session_change' | 'remote_stream' | 'error' | 'incoming_request' | 'message';
 
@@ -20,7 +20,7 @@ export class ConnectionManager {
   
   public rtcTransport = new RTCTransport();
   public agentTransport = new DesktopAgentTransport();
-  public remoteInput = new RemoteInputManager();
+  public remoteInput = new RemoteInputManager(this.rtcTransport as any);
 
   private listeners: Record<string, Function[]> = {};
 
@@ -35,6 +35,7 @@ export class ConnectionManager {
     this.remoteInput.setTransport(this.rtcTransport);
     this.rtcTransport.onPacket((packet) => this.emit('message', packet));
     this.agentTransport.onPacket((packet) => this.emit('message', packet));
+  }
 
   public static getInstance(): ConnectionManager {
     if (!ConnectionManager.instance) {

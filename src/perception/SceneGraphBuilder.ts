@@ -1,4 +1,4 @@
-import { SceneGraph, UIElement } from '../ai/domain/SceneGraph';
+import { type SceneGraph, type UIElement } from '../ai/domain/SceneGraph';
 
 export class SceneGraphBuilder {
   public static build(

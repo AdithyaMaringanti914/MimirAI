@@ -1,4 +1,4 @@
-import { ClipboardEvent } from '../domain/ClipboardEvent';
+import { type ClipboardEvent } from '../domain/ClipboardEvent';
 
 export class ClipboardManager {
   private lastCopiedData: string = '';

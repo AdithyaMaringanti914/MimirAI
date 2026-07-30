@@ -1,8 +1,8 @@
 import { RTCTransport } from '../transports/RTCTransport';
 import { CoordinateNormalizer } from './CoordinateNormalizer';
-import { RemoteInput } from '../domain/RemoteInput';
-import { MouseEventBase, MouseScrollEvent } from '../domain/MouseEvent';
-import { SessionPermissions } from '../domain/SessionPermissions';
+import { type RemoteInput } from '../domain/RemoteInput';
+import { type MouseEventBase, type MouseScrollEvent } from '../domain/MouseEvent';
+import { type SessionPermissions } from '../domain/SessionPermissions';
 
 export class RemoteInputManager {
   private transport: RTCTransport | null = null;

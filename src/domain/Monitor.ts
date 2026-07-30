@@ -1,4 +1,4 @@
-import { Resolution } from './Resolution';
+import { type Resolution } from './Resolution';
 
 export interface MonitorInfo {
   id: string;

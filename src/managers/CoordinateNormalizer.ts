@@ -1,4 +1,4 @@
-import { Resolution } from '../domain/Resolution';
+import { type Resolution } from '../domain/Resolution';
 
 export class CoordinateNormalizer {
   private localResolution: Resolution = { width: 1920, height: 1080, devicePixelRatio: 1 };
