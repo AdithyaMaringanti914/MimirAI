@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  // Base path for GitHub Pages removed for local dev
-  base: '/',
+  // Use /MimirAI/ for GitHub Pages deployment, otherwise / for local dev
+  base: process.env.GITHUB_ACTIONS ? '/MimirAI/' : '/',
 })
 
