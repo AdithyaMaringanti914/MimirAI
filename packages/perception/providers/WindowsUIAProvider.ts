@@ -87,8 +87,7 @@ export class WindowsUIAProvider implements PerceptionProvider {
                       hasKeyboardFocus: el.HasKeyboardFocus ?? false,
                       className: el.ClassName
                   },
-                  confidence: 1.0,
-                  provider: this.id()
+                  confidence: 1.0
               });
             }
         }
@@ -99,7 +98,8 @@ export class WindowsUIAProvider implements PerceptionProvider {
 
     return {
       provider: this.id(),
-      timestamp: Date.now(),
+      confidence: 1.0,
+      latencyMs: 0,
       observations: obs
     };
   }

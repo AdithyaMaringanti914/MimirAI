@@ -1,4 +1,4 @@
-import { type Action, type ExecuteShellPayload, type LaunchApplicationPayload, type ClickCoordinatesPayload, type TypeStringPayload } from '../domain/Action';
+import { type Action, type ExecuteShellPayload, type ClickCoordinatesPayload } from '../domain/Action';
 import { connectionManager } from '../../services/connection/ConnectionManager';
 import { PacketSerializer } from '../../protocol/PacketSerializer';
 

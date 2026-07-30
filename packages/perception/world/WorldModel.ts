@@ -1,6 +1,6 @@
 import { EventBus } from '../events/EventBus';
 import { type Observation, type WindowInfo } from '../core/types';
-import { type SceneGraph } from '../../src/ai/domain/SceneGraph';
+import { type SceneGraph } from '../../../src/ai/domain/SceneGraph';
 
 export class WorldModel {
   private static instance: WorldModel;

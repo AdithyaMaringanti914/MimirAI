@@ -47,7 +47,7 @@ export class Win32WindowProvider implements PerceptionProvider {
     return this._health;
   }
 
-  public async canObserve(ctx: ObservationContext): Promise<boolean> {
+  public async canObserve(_ctx: ObservationContext): Promise<boolean> {
     return this._health === ProviderHealth.Ready; 
   }
 
@@ -71,8 +71,7 @@ export class Win32WindowProvider implements PerceptionProvider {
               dpiScaling: w.dpiScaling,
               windowState: w.windowState
             },
-            confidence: 1.0,
-            provider: this.id()
+            confidence: 1.0
           });
         }
       }
@@ -82,7 +81,8 @@ export class Win32WindowProvider implements PerceptionProvider {
 
     return {
       provider: this.id(),
-      timestamp: Date.now(),
+      confidence: 1.0,
+      latencyMs: 0,
       observations: obs
     };
   }
