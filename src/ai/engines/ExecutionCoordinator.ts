@@ -1,6 +1,6 @@
 import { SafetyEngine } from './SafetyEngine';
 import { executionBus } from '../bus/ExecutionBus';
-import { type Goal } from '../domain/type Intent';
+import { type Goal } from '../domain/Intent';
 import { type SceneGraph } from '../domain/SceneGraph';
 import { type Action } from '../domain/Action';
 import { HybridDecisionEngine } from '../../perception/HybridDecisionEngine';

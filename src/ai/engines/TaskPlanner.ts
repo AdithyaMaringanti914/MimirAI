@@ -1,4 +1,4 @@
-import { type Goal } from '../domain/type Intent';
+import { type Goal } from '../domain/Intent';
 import { type Plan, type WorkflowNode } from '../domain/WorkflowNode';
 import { LLMClient } from './LLMClient';
 
