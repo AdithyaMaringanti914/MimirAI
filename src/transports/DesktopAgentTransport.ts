@@ -3,12 +3,11 @@ import { PacketValidator } from '../protocol/PacketValidator';
 import { PacketSerializer } from '../protocol/PacketSerializer';
 import { type RemoteInput } from '../domain/RemoteInput';
 import { SignalingManager } from '../services/connection/SignalingManager';
+import { type Transport } from './Transport';
 
-export class DesktopAgentTransport {
+export class DesktopAgentTransport implements Transport {
   private signaling: SignalingManager | null = null;
   private onPacketCb: ((packet: Packet) => void) | null = null;
-  private onErrorCb: ((err: Error) => void) | null = null;
-  
   private sessionId: string = '';
   private myDeviceId: string = '';
   private targetDeviceId: string = '';
@@ -56,10 +55,6 @@ export class DesktopAgentTransport {
 
   public onPacket(cb: (packet: Packet) => void) {
     this.onPacketCb = cb;
-  }
-
-  public onError(cb: (err: Error) => void) {
-    this.onErrorCb = cb;
   }
 
   public close() {

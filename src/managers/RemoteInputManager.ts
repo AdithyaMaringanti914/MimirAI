@@ -1,11 +1,11 @@
-import { RTCTransport } from '../transports/RTCTransport';
+import { type Transport } from '../transports/Transport';
 import { CoordinateNormalizer } from './CoordinateNormalizer';
 import { type RemoteInput } from '../domain/RemoteInput';
-import { type MouseEventBase, type MouseScrollEvent } from '../domain/MouseEvent';
+import { type MouseEventBase } from '../domain/MouseEvent';
 import { type SessionPermissions } from '../domain/SessionPermissions';
 
 export class RemoteInputManager {
-  private transport: RTCTransport | null = null;
+  private transport: Transport | null = null;
   public normalizer = new CoordinateNormalizer();
   
   private permissions: SessionPermissions = {
@@ -15,12 +15,10 @@ export class RemoteInputManager {
     canWriteClipboard: true
   };
 
-  private lastMouseX = -1;
-  private lastMouseY = -1;
   private mouseThrottleMs = 15; // Target <20ms
   private lastMouseTime = 0;
 
-  public setTransport(transport: RTCTransport) {
+  public setTransport(transport: Transport) {
     this.transport = transport;
   }
 
@@ -43,8 +41,6 @@ export class RemoteInputManager {
         return; // drop frame
       }
       this.lastMouseTime = now;
-      this.lastMouseX = event.x;
-      this.lastMouseY = event.y;
     }
 
     event.timestamp = Date.now();

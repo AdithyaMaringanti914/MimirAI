@@ -46,11 +46,11 @@ export async function registerDevice(
  * Requests to connect to a remote device.
  * (Placeholder for now, WebRTC negotiation happens via Socket.IO later)
  */
-export async function requestConnection(targetId: string, passwordHash: string): Promise<{ success: boolean; token?: string; error?: string }> {
+export async function requestConnection(_targetId: string, _passwordHash: string): Promise<{ success: boolean; token?: string; error?: string }> {
   // We'll implement actual Socket.io signaling here shortly.
   return { success: true };
 }
 
-export async function disconnectSession(sessionId: string): Promise<boolean> {
+export async function disconnectSession(_sessionId: string): Promise<boolean> {
   return true;
 }

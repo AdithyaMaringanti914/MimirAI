@@ -38,7 +38,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   pendingApprovalsCount,
   workflows,
   onStartSession,
-  onQuickConnect,
   onRunWorkflow,
   onNavigateTab
 }) => {
@@ -332,7 +331,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="flex items-center space-x-2 pt-2">
                 <button
                   type="submit"
-                  disabled={!connectInput.trim() || (session && session.status !== 'idle' && session.status !== 'failed' && session.status !== 'disconnected')}
+                  disabled={!connectInput.trim() || !!(session && session.status !== 'idle' && session.status !== 'failed' && session.status !== 'disconnected')}
                   className="flex-1 bg-[#1A73E8] hover:bg-[#1557B0] text-white font-semibold text-xs py-2.5 rounded-xl flex items-center justify-center space-x-2 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Play className="w-4 h-4 fill-white" />

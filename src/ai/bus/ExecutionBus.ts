@@ -1,6 +1,5 @@
 import { type Action, type ExecuteShellPayload, type ClickCoordinatesPayload } from '../domain/Action';
 import { connectionManager } from '../../services/connection/ConnectionManager';
-import { PacketSerializer } from '../../protocol/PacketSerializer';
 
 export class ExecutionBus {
   private static instance: ExecutionBus;

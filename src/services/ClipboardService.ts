@@ -2,13 +2,11 @@ import { ClipboardManager } from '../managers/ClipboardManager';
 import { RemoteInputManager } from '../managers/RemoteInputManager';
 
 export class ClipboardService {
-  private manager: ClipboardManager;
   private inputManager: RemoteInputManager;
   private pollInterval: number | null = null;
   private lastLocalText = '';
 
-  constructor(manager: ClipboardManager, inputManager: RemoteInputManager) {
-    this.manager = manager;
+  constructor(_manager: ClipboardManager, inputManager: RemoteInputManager) {
     this.inputManager = inputManager;
   }
 
@@ -26,7 +24,7 @@ export class ClipboardService {
     }
   }
 
-  private onLocalCopy = async (e: globalThis.ClipboardEvent) => {
+  private onLocalCopy = async (_e: globalThis.ClipboardEvent) => {
     try {
       const text = await navigator.clipboard.readText();
       if (text !== this.lastLocalText) {

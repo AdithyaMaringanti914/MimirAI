@@ -4,7 +4,7 @@ import { type Goal } from '../../ai/domain/Intent';
 
 export class ChromeAdapter {
   
-  public static tryDecideLocally(goal: Goal, scene: SceneGraph): Action | null {
+  public static tryDecideLocally(_goal: Goal, scene: SceneGraph): Action | null {
     // Chrome adapter relies on CDP (Chrome DevTools Protocol).
     // For now, if the application is not Chrome, skip.
     if (!scene.application.toLowerCase().includes('chrome')) {

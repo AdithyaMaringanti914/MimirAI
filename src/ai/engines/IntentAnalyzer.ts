@@ -1,4 +1,4 @@
-import { type Intent, type Goal } from '../domain/Intent';
+import { type Goal } from '../domain/Intent';
 import { LLMClient } from './LLMClient';
 
 export class IntentAnalyzer {

@@ -27,10 +27,6 @@ interface HostIdentityState {
   deviceName: string;
   refreshPassword: () => void;
   resetIdentity: () => void;
-  acceptConnection: () => void;
-  rejectConnection: () => void;
-  // Temporary dev method to simulate an incoming connection
-  simulateIncomingConnection: () => void;
 }
 
 const HostIdentityContext = createContext<HostIdentityState | undefined>(undefined);
@@ -94,17 +90,6 @@ export const HostIdentityProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setHostStatus('ready');
   }, []);
 
-  const acceptConnection = useCallback(() => {
-    // In reality, this would signal WebRTC to complete the connection
-  }, []);
-
-  const rejectConnection = useCallback(() => {
-    // In reality, this would reject the WebRTC call
-  }, []);
-
-  const simulateIncomingConnection = useCallback(() => {
-  }, []);
-
   return (
     <HostIdentityContext.Provider
       value={{
@@ -114,10 +99,7 @@ export const HostIdentityProvider: React.FC<{ children: React.ReactNode }> = ({ 
         deviceName,
         incomingRequest: null,
         refreshPassword,
-        resetIdentity,
-        acceptConnection: () => {},
-        rejectConnection: () => {},
-        simulateIncomingConnection: () => {}
+        resetIdentity
       }}
     >
       {children}

@@ -1,7 +1,7 @@
 import { type SceneGraph } from '../../ai/domain/SceneGraph';
 import { type Action } from '../../ai/domain/Action';
 import { type Goal } from '../../ai/domain/Intent';
-import { LLMClient } from '../../ai/engines/LLMClient';
+
 
 export class GenericWindowsAdapter {
   

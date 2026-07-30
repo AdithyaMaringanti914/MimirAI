@@ -1,10 +1,12 @@
 import { type RemoteInput } from './RemoteInput';
 
-export enum MouseButton {
-  LEFT = 0,
-  MIDDLE = 1,
-  RIGHT = 2
-}
+export const MouseButton = {
+  LEFT: 0,
+  MIDDLE: 1,
+  RIGHT: 2
+} as const;
+
+export type MouseButton = typeof MouseButton[keyof typeof MouseButton];
 
 export interface MouseEventBase extends RemoteInput {
   x: number;

@@ -236,7 +236,7 @@ export const RemoteSessionView: React.FC<RemoteSessionViewProps> = ({
           <LatencyBadge
             latencyMs={isConnected ? stats.latencyMs : device.latencyMs}
             fps={isConnected ? stats.fps : 60}
-            connectionState={connectionState}
+            connectionState={connectionState as any}
           />
         </div>
 

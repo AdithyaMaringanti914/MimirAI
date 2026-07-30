@@ -2,8 +2,9 @@ import type { Packet } from '../protocol/Packet';
 import { PacketValidator } from '../protocol/PacketValidator';
 import { PacketSerializer } from '../protocol/PacketSerializer';
 import { type RemoteInput } from '../domain/RemoteInput';
+import { type Transport } from './Transport';
 
-export class RTCTransport {
+export class RTCTransport implements Transport {
   private channel: RTCDataChannel | null = null;
   private onPacketCb: ((packet: Packet) => void) | null = null;
   private onErrorCb: ((err: Error) => void) | null = null;
@@ -22,7 +23,7 @@ export class RTCTransport {
     this.channel.onopen = () => this.onStateChangeCb?.('open');
     this.channel.onclose = () => this.onStateChangeCb?.('closed');
     
-    this.channel.onerror = (e) => {
+    this.channel.onerror = () => {
       this.onErrorCb?.(new Error('RTCDataChannel Error'));
     };
   }

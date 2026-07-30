@@ -1,4 +1,4 @@
-import { LLMClient } from './LLMClient';
+
 import { type SceneGraph } from '../domain/SceneGraph';
 import { executionBus } from '../bus/ExecutionBus';
 
