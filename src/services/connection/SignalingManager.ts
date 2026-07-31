@@ -11,7 +11,7 @@ type EventCallback<T> = (data: T) => void;
 
 export class SignalingManager {
   private socket: Socket | null = null;
-  private serverUrl: string = 'http://localhost:3000';
+  private serverUrl: string = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   public connect(deviceId: string) {
     if (this.socket) {
