@@ -4,7 +4,7 @@
  * Uses real backend fetch calls.
  */
 
-const API_URL = 'http://localhost:3000/api/device';
+const API_URL = `${import.meta.env.VITE_API_URL || 'https://mimirai-production.up.railway.app'}/api/device`;
 
 export interface DeviceRegistrationResponse {
   success: boolean;
