@@ -10,7 +10,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: '*', // For development. Production should strictly allow the frontend domain.
+    origin: process.env.CORS_ORIGIN || 'https://peaceful-warmth-production-4825.up.railway.app',
     methods: ['GET', 'POST']
   }
 });

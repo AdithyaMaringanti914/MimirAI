@@ -8,7 +8,9 @@ import deviceRoutes from './routes/deviceRoutes';
 const app = express();
 
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || 'https://peaceful-warmth-production-4825.up.railway.app'
+}));
 app.use(express.json());
 app.use(pinoHttp({ logger }));
 
