@@ -3,7 +3,7 @@
  * @description API interfaces for managing device passwords remotely using the real backend.
  */
 
-const API_URL = 'http://localhost:3000/api/device';
+const API_URL = (import.meta.env.VITE_API_URL || 'https://mimirai-production.up.railway.app') + '/api/device';
 
 /**
  * Syncs the local password change to the backend.

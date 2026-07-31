@@ -3,7 +3,7 @@
  * @description Background service that pings the real backend.
  */
 
-const API_URL = 'http://localhost:3000/api/device';
+const API_URL = (import.meta.env.VITE_API_URL || 'https://mimirai-production.up.railway.app') + '/api/device';
 
 /**
  * Sends a heartbeat to the server.
